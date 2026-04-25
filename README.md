@@ -28,6 +28,8 @@ growth-app/
     requirements.txt
     app.py
     vercel.json
+    api/
+      index.py
     templates/
       base.html
       index.html
@@ -196,12 +198,13 @@ Vercel側の設定:
   - `DATABASE_URL`: Neon / Supabase の本番PostgreSQL接続文字列
   - `FLASK_SECRET_KEY`: 本番用のランダムな秘密値
 
-`app/vercel.json` では、すべてのリクエストを `app.py` に渡すように設定しています。
+`app/vercel.json` では、すべてのリクエストを `api/index.py` に渡し、そこから Flask の `app.py` を読み込みます。
 
 ```text
 ブラウザ
   -> Vercel
   -> app/vercel.json
+  -> api/index.py
   -> app.py
   -> Flask
   -> PostgreSQL
