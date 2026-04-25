@@ -20,6 +20,9 @@ growth-app/
   .env.example
   .gitignore
   README.md
+  db/
+    schema.sql
+    README.md
   app/
     Dockerfile
     requirements.txt
@@ -132,6 +135,55 @@ git push -u origin main
 
 空リポジトリ作成時は、GitHub側で README / .gitignore / License を追加しないでください。
 
+## 本番用DBの準備
+
+Step 3 では、Vercel から接続する外部 PostgreSQL を用意します。第一候補は Neon です。Supabase を使う場合も、PostgreSQL の接続文字列を `DATABASE_URL` として扱えます。
+
+### ローカルDBと本番DBの違い
+
+ローカル:
+
+- Docker Compose の `db` コンテナ
+- 接続先は `db:5432`
+- 学習・開発用
+
+本番:
+
+- Neon / Supabase などの外部PostgreSQL
+- 接続先は外部DBのホスト
+- Vercel から接続する
+
+### Neon を使う場合
+
+1. Neon にログインする
+2. `New Project` を作成する
+3. PostgreSQL の connection string を取得する
+4. connection string を `DATABASE_URL` として扱う
+5. 本番用の `DATABASE_URL` は Git に入れない
+
+後続の Step 4 で、Vercel の Environment Variables に本番用 `DATABASE_URL` を登録します。
+
+### schema.sql の適用
+
+本番DBに必要なテーブル定義は `db/schema.sql` にあります。
+
+ローカルに `psql` がある場合:
+
+```sh
+psql "$DATABASE_URL" -f db/schema.sql
+```
+
+Docker を使って `psql` を実行する場合:
+
+```sh
+docker run --rm -it \
+  -v "$PWD/db:/db" \
+  postgres:16 \
+  psql "$DATABASE_URL" -f /db/schema.sql
+```
+
+実際の `DATABASE_URL`、DBパスワード、`FLASK_SECRET_KEY` は Git に含めないでください。`.env` に書く場合も、`.env` はローカル専用として管理します。
+
 ## 開発メモ
 
 - DB接続先は `DATABASE_URL` 環境変数から読みます。
@@ -141,6 +193,6 @@ git push -u origin main
 
 ## 次のステップ
 
-- GitHub リポジトリを作成して `origin` を設定する
+- Step 4 で Vercel に GitHub リポジトリを接続する
+- Step 4 で Vercel の Environment Variables に `DATABASE_URL` を登録する
 - 必要に応じてDB確認用の Adminer や pgAdmin を追加する
-- Step 3 で画面改善、入力編集、グラフ表示などを検討する
