@@ -8,6 +8,8 @@
 
 写真つき記録は、最小構成として `growth_records.image_data` の `BYTEA` に保存します。MIMEタイプと元ファイル名は `image_mime_type`、`image_filename` に保存します。
 
+プロフィール画像も最小構成として `children.profile_image_data` の `BYTEA` に保存します。MIMEタイプと元ファイル名は `profile_image_mime_type`、`profile_image_filename` に保存します。
+
 `CREATE TABLE IF NOT EXISTS` と `CREATE INDEX IF NOT EXISTS` を使っているため、既存のテーブルや index がある場合でもエラーになりにくい構成です。
 
 ## Neon でPostgreSQLを作る手順

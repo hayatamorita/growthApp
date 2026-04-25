@@ -2,6 +2,9 @@ CREATE TABLE IF NOT EXISTS children (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     birthday DATE,
+    profile_image_data BYTEA,
+    profile_image_mime_type TEXT,
+    profile_image_filename TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

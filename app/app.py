@@ -61,6 +61,9 @@ def init_db():
                     id SERIAL PRIMARY KEY,
                     name TEXT NOT NULL,
                     birthday DATE,
+                    profile_image_data BYTEA,
+                    profile_image_mime_type TEXT,
+                    profile_image_filename TEXT,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
                 """
@@ -85,6 +88,24 @@ def init_db():
                 """
                 ALTER TABLE children
                 ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                """
+            )
+            cur.execute(
+                """
+                ALTER TABLE children
+                ADD COLUMN IF NOT EXISTS profile_image_data BYTEA
+                """
+            )
+            cur.execute(
+                """
+                ALTER TABLE children
+                ADD COLUMN IF NOT EXISTS profile_image_mime_type TEXT
+                """
+            )
+            cur.execute(
+                """
+                ALTER TABLE children
+                ADD COLUMN IF NOT EXISTS profile_image_filename TEXT
                 """
             )
             cur.execute(
@@ -197,7 +218,17 @@ def format_month(record_date):
 def get_children():
     with get_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute("SELECT id, name, birthday FROM children ORDER BY id DESC")
+            cur.execute(
+                """
+                SELECT
+                    id,
+                    name,
+                    birthday,
+                    profile_image_data IS NOT NULL AS has_profile_image
+                FROM children
+                ORDER BY id DESC
+                """
+            )
             return cur.fetchall()
 
 
@@ -205,7 +236,15 @@ def get_child_or_none(child_id):
     with get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
-                "SELECT id, name, birthday FROM children WHERE id = %s",
+                """
+                SELECT
+                    id,
+                    name,
+                    birthday,
+                    profile_image_data IS NOT NULL AS has_profile_image
+                FROM children
+                WHERE id = %s
+                """,
                 (child_id,),
             )
             return cur.fetchone()
@@ -318,7 +357,12 @@ def build_combined_chart(records):
 
     for index, record in enumerate(values):
         x_position = 14 + (72 * index / max(len(values) - 1, 1))
-        labels.append({"x": f"{x_position:.2f}", "text": record["record_date"].strftime("%m/%d")})
+        labels.append(
+            {
+                "x": f"{x_position:.2f}",
+                "text": f"{record['record_date'].month}/{record['record_date'].day}",
+            }
+        )
         if record["height_cm"] is not None and height_scale:
             y_value = y_position(float(record["height_cm"]), height_scale, 16, 46)
             point = f"{x_position:.2f},{y_value:.2f}"
@@ -402,8 +446,23 @@ def index():
 
     child = get_active_child()
     if not child:
-        return render_template("profile.html", child=None, children=[], active_tab="profile")
+        return redirect(url_for("new_child"))
     return redirect(url_for("child_detail", child_id=child["id"]))
+
+
+@app.route("/children/new", methods=["GET", "POST"])
+def new_child():
+    if request.method == "POST":
+        child_id = create_child_from_form()
+        if child_id:
+            return redirect(url_for("child_detail", child_id=child_id))
+
+    return render_template(
+        "add_child.html",
+        child=get_active_child(),
+        children=get_children(),
+        active_tab="profile",
+    )
 
 
 @app.route("/children/<int:child_id>")
@@ -529,15 +588,76 @@ def gallery(child_id):
     )
 
 
-@app.route("/children/<int:child_id>/profile", methods=["GET", "POST"])
+@app.route("/children/<int:child_id>/profile")
 def profile(child_id):
     child = get_active_child(child_id)
-    if request.method == "POST":
-        new_child_id = create_child_from_form()
-        if new_child_id:
-            return redirect(url_for("profile", child_id=new_child_id))
 
     return render_child_page("profile.html", child, "profile")
+
+
+@app.route("/children/<int:child_id>/profile/image", methods=["POST"])
+def update_profile_image(child_id):
+    child = get_active_child(child_id)
+    if not child:
+        flash("赤ちゃんが見つかりません。", "error")
+        return redirect(url_for("index"))
+
+    try:
+        image_data, image_mime_type, image_filename = read_optional_image(
+            request.files.get("profile_image")
+        )
+        if image_data is None:
+            raise ValueError("プロフィール画像を選択してください。")
+    except ValueError as error:
+        flash(str(error), "error")
+        return redirect(url_for("profile", child_id=child["id"]))
+
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                UPDATE children
+                SET
+                    profile_image_data = %s,
+                    profile_image_mime_type = %s,
+                    profile_image_filename = %s
+                WHERE id = %s
+                """,
+                (image_data, image_mime_type, image_filename, child["id"]),
+            )
+        conn.commit()
+
+    flash("プロフィール画像を更新しました。", "success")
+    return redirect(url_for("profile", child_id=child["id"]))
+
+
+@app.route("/children/<int:child_id>/profile-image")
+def profile_image(child_id):
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT profile_image_data, profile_image_mime_type, profile_image_filename
+                FROM children
+                WHERE id = %s AND profile_image_data IS NOT NULL
+                """,
+                (child_id,),
+            )
+            child = cur.fetchone()
+
+    if not child:
+        abort(404)
+
+    response = Response(
+        bytes(child["profile_image_data"]),
+        mimetype=child["profile_image_mime_type"] or "application/octet-stream",
+    )
+    if child["profile_image_filename"]:
+        response.headers["Content-Disposition"] = (
+            f'inline; filename="{child["profile_image_filename"]}"'
+        )
+    response.headers["Cache-Control"] = "private, max-age=3600"
+    return response
 
 
 @app.route("/records/<int:record_id>/image")

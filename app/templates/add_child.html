@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}赤ちゃんを追加 - 成長記録アプリ{% endblock %}
+
+{% block content %}
+  <section class="card empty-state">
+    <div class="empty-icon">👶</div>
+    <h1 class="page-title">赤ちゃんを追加</h1>
+    <p class="page-subtitle">名前と誕生日を入力して、成長記録を始めましょう。</p>
+  </section>
+
+  <form class="card stack" method="post" action="{{ url_for('new_child') }}">
+    <div class="input-card">
+      <label for="name">名前（必須）</label>
+      <input id="name" name="name" placeholder="例: ひな" required>
+    </div>
+    <div class="input-card">
+      <label for="birthday">誕生日</label>
+      <input id="birthday" name="birthday" type="date">
+    </div>
+    <div class="form-actions">
+      <button type="submit">＋ 追加する</button>
+      {% if child %}
+        <a class="button secondary" href="{{ url_for('profile', child_id=child.id) }}">戻る</a>
+      {% endif %}
+    </div>
+  </form>
+{% endblock %}

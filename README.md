@@ -122,6 +122,7 @@ docker compose exec db psql -U growth_user -d growth_db
 - 成長記録の追加、削除
 - サンプルUIに合わせた Home / Chart / Add / Gallery / Profile のタブ構成
 - 写真つき成長記録の追加、アルバム表示
+- プロフィール画像の編集
 
 ## GitHub に含めないもの
 

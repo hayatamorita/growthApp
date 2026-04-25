@@ -113,6 +113,13 @@
       justify-content: center;
       width: 74px;
     }
+    .avatar img {
+      border-radius: inherit;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      width: 100%;
+    }
     .avatar.large {
       font-size: 40px;
       height: 128px;
@@ -477,6 +484,18 @@
     .settings-card {
       overflow: hidden;
       padding: 0;
+    }
+    .profile-upload {
+      display: grid;
+      gap: 12px;
+      justify-items: center;
+      width: 100%;
+    }
+    .profile-upload input {
+      background: var(--pink-soft);
+      border-radius: 999px;
+      color: #64748b;
+      padding: 10px;
     }
     .setting-row {
       align-items: center;

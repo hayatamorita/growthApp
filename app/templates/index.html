@@ -4,7 +4,13 @@
 
 {% block content %}
   <section class="card profile-summary">
-    <div class="avatar">{{ child.name[:1] }}</div>
+    <div class="avatar">
+      {% if child.has_profile_image %}
+        <img src="{{ url_for('profile_image', child_id=child.id) }}" alt="{{ child.name }}のプロフィール画像">
+      {% else %}
+        {{ child.name[:1] }}
+      {% endif %}
+    </div>
     <div>
       <h1 class="page-title">{{ child.name }} ちゃん</h1>
       <p class="page-subtitle">{{ age_text }}</p>

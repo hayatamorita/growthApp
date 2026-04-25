@@ -5,34 +5,30 @@
 {% block content %}
   {% if child %}
     <section class="card empty-state">
-      <div class="avatar large">{{ child.name[:1] }}</div>
+      <div class="avatar large">
+        {% if child.has_profile_image %}
+          <img src="{{ url_for('profile_image', child_id=child.id) }}" alt="{{ child.name }}のプロフィール画像">
+        {% else %}
+          {{ child.name[:1] }}
+        {% endif %}
+      </div>
       <div>
         <h1 class="page-title">{{ child.name }} ちゃん</h1>
         <p class="page-subtitle">{{ child.birthday or '誕生日未設定' }} 生まれ</p>
       </div>
+      <form class="profile-upload" method="post" enctype="multipart/form-data" action="{{ url_for('update_profile_image', child_id=child.id) }}">
+        <label for="profile_image">プロフィール画像を編集</label>
+        <input id="profile_image" name="profile_image" type="file" accept="image/png,image/jpeg,image/gif,image/webp" required>
+        <button type="submit">画像を更新</button>
+      </form>
     </section>
   {% else %}
     <section class="card empty-state">
       <div class="empty-icon">👶</div>
-      <h1 class="page-title">赤ちゃんを追加</h1>
-      <p class="page-subtitle">最初のプロフィールを作成しましょう。</p>
+      <h1 class="page-title">プロフィール</h1>
+      <p class="page-subtitle">赤ちゃんを追加して記録を始めましょう。</p>
     </section>
   {% endif %}
-
-  <section>
-    <h2 class="muted" style="margin: 0 0 10px 12px;">赤ちゃんを追加</h2>
-    <form class="card stack" method="post" action="{{ url_for('profile', child_id=child.id) if child else url_for('index') }}">
-      <div class="input-card">
-        <label for="name">名前（必須）</label>
-        <input id="name" name="name" placeholder="例: ひな" required>
-      </div>
-      <div class="input-card">
-        <label for="birthday">誕生日</label>
-        <input id="birthday" name="birthday" type="date">
-      </div>
-      <button type="submit">＋ 赤ちゃんを追加</button>
-    </form>
-  </section>
 
   {% if children %}
     <section>
@@ -41,7 +37,13 @@
         {% for item in children %}
           <div class="baby-row">
             <a class="baby-row" href="{{ url_for('child_detail', child_id=item.id) }}">
-              <span class="avatar" style="height: 44px; width: 44px; font-size: 16px;">{{ item.name[:1] }}</span>
+              <span class="avatar" style="height: 44px; width: 44px; font-size: 16px;">
+                {% if item.has_profile_image %}
+                  <img src="{{ url_for('profile_image', child_id=item.id) }}" alt="{{ item.name }}のプロフィール画像">
+                {% else %}
+                  {{ item.name[:1] }}
+                {% endif %}
+              </span>
               <span>
                 <strong>{{ item.name }}</strong><br>
                 <span class="muted">{{ item.birthday or '誕生日未設定' }}</span>
@@ -72,6 +74,10 @@
         <span class="muted">›</span>
       </div>
     </div>
+  </section>
+
+  <section style="margin-top: 24px;">
+    <a class="button" href="{{ url_for('new_child') }}" style="width: 100%;">＋ 赤ちゃんを追加</a>
   </section>
 
   <p class="muted" style="text-align: center; margin-top: 28px;">Version 1.0.0</p>
