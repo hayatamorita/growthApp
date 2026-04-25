@@ -27,6 +27,7 @@ growth-app/
     Dockerfile
     requirements.txt
     app.py
+    vercel.json
     templates/
       base.html
       index.html
@@ -183,6 +184,30 @@ docker run --rm -it \
 ```
 
 実際の `DATABASE_URL`、DBパスワード、`FLASK_SECRET_KEY` は Git に含めないでください。`.env` に書く場合も、`.env` はローカル専用として管理します。
+
+## Vercel デプロイ設定
+
+Vercel では Docker Compose を使わず、`app/` ディレクトリを Flask アプリとしてデプロイします。
+
+Vercel側の設定:
+
+- Root Directory: `app`
+- Environment Variables:
+  - `DATABASE_URL`: Neon / Supabase の本番PostgreSQL接続文字列
+  - `FLASK_SECRET_KEY`: 本番用のランダムな秘密値
+
+`app/vercel.json` では、すべてのリクエストを `app.py` に渡すように設定しています。
+
+```text
+ブラウザ
+  -> Vercel
+  -> app/vercel.json
+  -> app.py
+  -> Flask
+  -> PostgreSQL
+```
+
+`compose.yml`、`app/Dockerfile`、ローカルPostgreSQLコンテナは、ローカル開発用です。Vercel本番環境では使いません。
 
 ## 開発メモ
 

@@ -13,6 +13,7 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY") or os.environ.get(
 )
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
+db_initialized = False
 
 
 def get_connection():
@@ -44,7 +45,8 @@ def init_db():
                 CREATE TABLE IF NOT EXISTS children (
                     id SERIAL PRIMARY KEY,
                     name TEXT NOT NULL,
-                    birthday DATE
+                    birthday DATE,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
                 """
             )
@@ -52,7 +54,7 @@ def init_db():
                 """
                 CREATE TABLE IF NOT EXISTS growth_records (
                     id SERIAL PRIMARY KEY,
-                    child_id INTEGER REFERENCES children(id) ON DELETE CASCADE,
+                    child_id INTEGER NOT NULL REFERENCES children(id) ON DELETE CASCADE,
                     record_date DATE NOT NULL,
                     height_cm NUMERIC,
                     weight_kg NUMERIC,
@@ -61,7 +63,39 @@ def init_db():
                 )
                 """
             )
+            cur.execute(
+                """
+                ALTER TABLE children
+                ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                """
+            )
+            cur.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_growth_records_child_id
+                ON growth_records (child_id)
+                """
+            )
+            cur.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_growth_records_record_date
+                ON growth_records (record_date)
+                """
+            )
         conn.commit()
+
+
+def ensure_db_initialized():
+    global db_initialized
+    if db_initialized:
+        return
+    wait_for_db()
+    init_db()
+    db_initialized = True
+
+
+@app.before_request
+def initialize_db_before_request():
+    ensure_db_initialized()
 
 
 def parse_optional_decimal(value, field_name):
@@ -206,9 +240,6 @@ def delete_child(child_id):
     return redirect(url_for("index"))
 
 
-wait_for_db()
-init_db()
-
-
 if __name__ == "__main__":
+    ensure_db_initialized()
     app.run(host="0.0.0.0", port=5000, debug=True)
