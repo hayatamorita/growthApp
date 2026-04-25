@@ -271,31 +271,85 @@ def build_record_form_defaults(child_id):
     }
 
 
-def build_chart_points(records, key):
-    values = [record for record in records if record[key] is not None]
+def build_combined_chart(records):
+    values = [
+        record
+        for record in records
+        if record["height_cm"] is not None or record["weight_kg"] is not None
+    ][-6:]
     if not values:
-        return {"points": "", "labels": [], "latest": None}
+        return {
+            "height_points": "",
+            "weight_points": "",
+            "height_dots": [],
+            "weight_dots": [],
+            "height_ticks": [],
+            "weight_ticks": [],
+            "labels": [],
+            "latest_height": None,
+            "latest_weight": None,
+        }
 
-    values = values[-6:]
-    numeric_values = [float(record[key]) for record in values]
-    min_value = min(numeric_values)
-    max_value = max(numeric_values)
-    if min_value == max_value:
-        min_value -= 1
-        max_value += 1
+    heights = [float(record["height_cm"]) for record in values if record["height_cm"] is not None]
+    weights = [float(record["weight_kg"]) for record in values if record["weight_kg"] is not None]
 
-    points = []
+    def scale_info(numbers):
+        if not numbers:
+            return None
+        min_value = min(numbers)
+        max_value = max(numbers)
+        if min_value == max_value:
+            min_value -= 1
+            max_value += 1
+        padding = (max_value - min_value) * 0.12
+        return min_value - padding, max_value + padding
+
+    height_scale = scale_info(heights)
+    weight_scale = scale_info(weights)
     labels = []
+    height_points = []
+    weight_points = []
+    height_dots = []
+    weight_dots = []
+
+    def y_position(value, scale, top, bottom):
+        min_value, max_value = scale
+        return bottom - ((value - min_value) / (max_value - min_value) * (bottom - top))
+
     for index, record in enumerate(values):
-        x_position = 12 + (76 * index / max(len(values) - 1, 1))
-        y_position = 84 - ((float(record[key]) - min_value) / (max_value - min_value) * 68)
-        points.append(f"{x_position:.2f},{y_position:.2f}")
-        labels.append(record["record_date"].strftime("%m/%d"))
+        x_position = 14 + (72 * index / max(len(values) - 1, 1))
+        labels.append({"x": f"{x_position:.2f}", "text": record["record_date"].strftime("%m/%d")})
+        if record["height_cm"] is not None and height_scale:
+            y_value = y_position(float(record["height_cm"]), height_scale, 16, 46)
+            point = f"{x_position:.2f},{y_value:.2f}"
+            height_points.append(point)
+            height_dots.append({"x": f"{x_position:.2f}", "y": f"{y_value:.2f}"})
+        if record["weight_kg"] is not None and weight_scale:
+            y_value = y_position(float(record["weight_kg"]), weight_scale, 58, 88)
+            point = f"{x_position:.2f},{y_value:.2f}"
+            weight_points.append(point)
+            weight_dots.append({"x": f"{x_position:.2f}", "y": f"{y_value:.2f}"})
+
+    def ticks(scale, unit):
+        if not scale:
+            return []
+        min_value, max_value = scale
+        return [
+            {"y": "16" if unit == "cm" else "58", "text": f"{max_value:.1f}{unit}"},
+            {"y": "31" if unit == "cm" else "73", "text": f"{((min_value + max_value) / 2):.1f}{unit}"},
+            {"y": "46" if unit == "cm" else "88", "text": f"{min_value:.1f}{unit}"},
+        ]
 
     return {
-        "points": " ".join(points),
+        "height_points": " ".join(height_points),
+        "weight_points": " ".join(weight_points),
+        "height_dots": height_dots,
+        "weight_dots": weight_dots,
+        "height_ticks": ticks(height_scale, "cm"),
+        "weight_ticks": ticks(weight_scale, "kg"),
         "labels": labels,
-        "latest": numeric_values[-1],
+        "latest_height": heights[-1] if heights else None,
+        "latest_weight": weights[-1] if weights else None,
     }
 
 
@@ -383,8 +437,7 @@ def growth_chart(child_id):
         child,
         "chart",
         records=records,
-        height_chart=build_chart_points(records, "height_cm"),
-        weight_chart=build_chart_points(records, "weight_kg"),
+        chart=build_combined_chart(records),
     )
 
 
@@ -512,6 +565,44 @@ def record_image(record_id):
         response.headers["Content-Disposition"] = f'inline; filename="{record["image_filename"]}"'
     response.headers["Cache-Control"] = "private, max-age=3600"
     return response
+
+
+@app.route("/records/<int:record_id>/photo")
+def record_photo(record_id):
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT
+                    growth_records.id,
+                    growth_records.child_id,
+                    growth_records.record_date,
+                    growth_records.memo,
+                    growth_records.image_filename,
+                    children.name AS child_name,
+                    children.birthday AS child_birthday
+                FROM growth_records
+                JOIN children ON children.id = growth_records.child_id
+                WHERE growth_records.id = %s AND growth_records.image_data IS NOT NULL
+                """,
+                (record_id,),
+            )
+            record = cur.fetchone()
+
+    if not record:
+        abort(404)
+
+    child = {
+        "id": record["child_id"],
+        "name": record["child_name"],
+        "birthday": record["child_birthday"],
+    }
+    return render_child_page(
+        "photo.html",
+        child,
+        "gallery",
+        record=record,
+    )
 
 
 @app.route("/records/<int:record_id>/delete", methods=["POST"])

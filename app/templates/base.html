@@ -223,6 +223,7 @@
       border-radius: 24px;
       height: 190px;
       margin-bottom: 14px;
+      object-position: top center;
     }
     .gallery-grid {
       display: grid;
@@ -400,6 +401,25 @@
       height: 240px;
       width: 100%;
     }
+    .combined-chart {
+      height: auto;
+      overflow: visible;
+    }
+    .axis-label {
+      fill: #94a3b8;
+      font-size: 3px;
+      font-weight: 800;
+    }
+    .axis-label.height {
+      fill: var(--pink);
+    }
+    .axis-label.weight {
+      fill: var(--blue);
+    }
+    .chart-grid {
+      stroke: #f1f5f9;
+      stroke-width: 0.6;
+    }
     .chart-line {
       fill: none;
       stroke: var(--pink);
@@ -409,6 +429,50 @@
     }
     .chart-line.blue {
       stroke: var(--blue);
+    }
+    .chart-dot {
+      fill: white;
+      stroke: var(--pink);
+      stroke-width: 1.8;
+    }
+    .chart-dot.blue {
+      stroke: var(--blue);
+    }
+    .chart-legend {
+      display: flex;
+      gap: 12px;
+      margin-top: 10px;
+    }
+    .legend-item {
+      align-items: center;
+      color: #64748b;
+      display: inline-flex;
+      font-size: 12px;
+      font-weight: 900;
+      gap: 6px;
+    }
+    .legend-dot {
+      background: var(--pink);
+      border-radius: 999px;
+      height: 10px;
+      width: 10px;
+    }
+    .legend-dot.blue {
+      background: var(--blue);
+    }
+    .photo-view {
+      align-items: center;
+      display: grid;
+      gap: 16px;
+      min-height: 70vh;
+    }
+    .photo-view img {
+      background: var(--pink-soft);
+      border-radius: 32px;
+      box-shadow: var(--shadow);
+      max-height: 72vh;
+      object-fit: contain;
+      width: 100%;
     }
     .settings-card {
       overflow: hidden;

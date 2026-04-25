@@ -45,7 +45,9 @@
           </div>
 
           {% if record.has_image %}
-            <img class="record-image" src="{{ url_for('record_image', record_id=record.id) }}" alt="{{ record.image_filename or '成長記録の画像' }}">
+            <a href="{{ url_for('record_photo', record_id=record.id) }}">
+              <img class="record-image" src="{{ url_for('record_image', record_id=record.id) }}" alt="{{ record.image_filename or '成長記録の画像' }}">
+            </a>
           {% endif %}
 
           <h3>{{ record.memo[:18] if record.memo else '成長の記録' }}</h3>

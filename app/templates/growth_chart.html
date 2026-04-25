@@ -6,41 +6,62 @@
   <h1 class="page-title">成長曲線</h1>
   <p class="page-subtitle">{{ child.name }} ちゃんの身長・体重の変化</p>
 
-  <div class="segmented" style="margin-top: 24px;">
-    <span>身長</span>
-    <span>体重</span>
-  </div>
+  <section class="chart-box" style="margin-top: 24px;">
+    <div class="record-top">
+      <h2 style="margin: 0;">身長と体重</h2>
+      <span class="pill">Dual Axis</span>
+    </div>
 
-  <section class="chart-box">
-    <h2>身長</h2>
-    {% if height_chart.points %}
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="身長グラフ">
-        <line x1="8" y1="15" x2="8" y2="90" stroke="#f1f5f9" stroke-width="1" />
-        <line x1="8" y1="90" x2="94" y2="90" stroke="#f1f5f9" stroke-width="1" />
-        <polyline class="chart-line" points="{{ height_chart.points }}" />
+    {% if chart.height_points or chart.weight_points %}
+      <svg class="combined-chart" viewBox="0 0 100 104" preserveAspectRatio="none" aria-label="身長と体重のグラフ">
+        <line class="chart-grid" x1="12" y1="16" x2="88" y2="16" />
+        <line class="chart-grid" x1="12" y1="31" x2="88" y2="31" />
+        <line class="chart-grid" x1="12" y1="46" x2="88" y2="46" />
+        <line class="chart-grid" x1="12" y1="58" x2="88" y2="58" />
+        <line class="chart-grid" x1="12" y1="73" x2="88" y2="73" />
+        <line class="chart-grid" x1="12" y1="88" x2="88" y2="88" />
+        <line x1="12" y1="14" x2="12" y2="90" stroke="#fbcfe8" stroke-width="0.8" />
+        <line x1="88" y1="14" x2="88" y2="90" stroke="#bfdbfe" stroke-width="0.8" />
+        <line x1="12" y1="90" x2="88" y2="90" stroke="#f1f5f9" stroke-width="0.8" />
+
+        {% for tick in chart.height_ticks %}
+          <text class="axis-label height" x="1" y="{{ tick.y }}">{{ tick.text }}</text>
+        {% endfor %}
+        {% for tick in chart.weight_ticks %}
+          <text class="axis-label weight" x="90" y="{{ tick.y }}">{{ tick.text }}</text>
+        {% endfor %}
+
+        {% if chart.height_points %}
+          <polyline class="chart-line" points="{{ chart.height_points }}" />
+          {% for dot in chart.height_dots %}
+            <circle class="chart-dot" cx="{{ dot.x }}" cy="{{ dot.y }}" r="1.8" />
+          {% endfor %}
+        {% endif %}
+        {% if chart.weight_points %}
+          <polyline class="chart-line blue" points="{{ chart.weight_points }}" />
+          {% for dot in chart.weight_dots %}
+            <circle class="chart-dot blue" cx="{{ dot.x }}" cy="{{ dot.y }}" r="1.8" />
+          {% endfor %}
+        {% endif %}
+
+        {% for label in chart.labels %}
+          <text class="axis-label" x="{{ label.x }}" y="101" text-anchor="middle">{{ label.text }}</text>
+        {% endfor %}
       </svg>
-      <p class="muted">最新: {{ height_chart.latest }} cm</p>
-    {% else %}
-      <div class="empty-state">
-        <div class="empty-icon">📏</div>
-        <p class="muted">身長の記録がまだありません。</p>
+
+      <div class="chart-legend">
+        <span class="legend-item"><span class="legend-dot"></span>身長（左軸・上）</span>
+        <span class="legend-item"><span class="legend-dot blue"></span>体重（右軸・下）</span>
       </div>
-    {% endif %}
-  </section>
-
-  <section class="chart-box">
-    <h2>体重</h2>
-    {% if weight_chart.points %}
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="体重グラフ">
-        <line x1="8" y1="15" x2="8" y2="90" stroke="#f1f5f9" stroke-width="1" />
-        <line x1="8" y1="90" x2="94" y2="90" stroke="#f1f5f9" stroke-width="1" />
-        <polyline class="chart-line blue" points="{{ weight_chart.points }}" />
-      </svg>
-      <p class="muted">最新: {{ weight_chart.latest }} kg</p>
+      <p class="muted" style="margin-top: 10px;">
+        最新:
+        身長 {{ chart.latest_height if chart.latest_height is not none else '—' }}cm /
+        体重 {{ chart.latest_weight if chart.latest_weight is not none else '—' }}kg
+      </p>
     {% else %}
       <div class="empty-state">
-        <div class="empty-icon">⚖️</div>
-        <p class="muted">体重の記録がまだありません。</p>
+        <div class="empty-icon">⌁</div>
+        <p class="muted">グラフに表示できる記録がまだありません。</p>
       </div>
     {% endif %}
   </section>

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Photo - 成長記録アプリ{% endblock %}
+
+{% block content %}
+  <section class="photo-view">
+    <div>
+      <a class="button secondary" href="{{ url_for('child_detail', child_id=child.id) }}">← 戻る</a>
+    </div>
+    <img src="{{ url_for('record_image', record_id=record.id) }}" alt="{{ record.image_filename or '成長記録の写真' }}">
+    <div class="card">
+      <div class="record-top">
+        <span class="pill">{{ record.record_date }}</span>
+        <a class="muted" href="{{ url_for('gallery', child_id=child.id) }}">Gallery</a>
+      </div>
+      <h1 class="page-title">{{ child.name }} ちゃんの写真</h1>
+      <p class="memo">{{ record.memo or '写真つきの成長記録です。' }}</p>
+    </div>
+  </section>
+{% endblock %}

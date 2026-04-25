@@ -13,7 +13,7 @@
           <h2 class="muted">{{ month }}</h2>
           <div class="gallery-grid">
             {% for record in records %}
-              <a class="gallery-tile" href="{{ url_for('child_detail', child_id=child.id) }}">
+              <a class="gallery-tile" href="{{ url_for('record_photo', record_id=record.id) }}">
                 <img class="gallery-image" src="{{ url_for('record_image', record_id=record.id) }}" alt="{{ record.image_filename or '成長記録の写真' }}">
               </a>
             {% endfor %}
