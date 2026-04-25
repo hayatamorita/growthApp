@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}{{ child.name }} - 成長記録アプリ{% endblock %}
+
+{% block content %}
+  <section class="card">
+    <h2>{{ child.name }}</h2>
+    <p class="muted">誕生日: {{ child.birthday or '未設定' }}</p>
+    <a class="button" href="{{ url_for('add_record', child_id=child.id) }}">記録を追加</a>
+  </section>
+
+  <section class="card">
+    <h2>成長記録</h2>
+    {% if records %}
+      <ul class="list">
+        {% for record in records %}
+          <li>
+            <div class="row">
+              <div>
+                <strong>{{ record.record_date }}</strong>
+                <div>
+                  身長: {{ record.height_cm if record.height_cm is not none else '未入力' }} cm /
+                  体重: {{ record.weight_kg if record.weight_kg is not none else '未入力' }} kg
+                </div>
+                {% if record.memo %}
+                  <div class="muted">メモ: {{ record.memo }}</div>
+                {% endif %}
+              </div>
+              <form class="inline-form" action="{{ url_for('delete_record', record_id=record.id) }}" method="post" onsubmit="return confirm('この記録を削除しますか？');">
+                <button class="danger" type="submit">削除</button>
+              </form>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">まだ成長記録がありません。</p>
+    {% endif %}
+  </section>
+{% endblock %}

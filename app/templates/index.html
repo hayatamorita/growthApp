@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}子供一覧 - 成長記録アプリ{% endblock %}
+
+{% block content %}
+  <section class="card">
+    <h2>子供を追加</h2>
+    <form method="post">
+      <label for="name">名前（必須）</label>
+      <input id="name" name="name" required>
+
+      <label for="birthday">誕生日</label>
+      <input id="birthday" name="birthday" type="date">
+
+      <button type="submit">追加する</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>子供一覧</h2>
+    {% if children %}
+      <ul class="list">
+        {% for child in children %}
+          <li class="row">
+            <div>
+              <a href="{{ url_for('child_detail', child_id=child.id) }}"><strong>{{ child.name }}</strong></a>
+              <div class="muted">誕生日: {{ child.birthday or '未設定' }}</div>
+            </div>
+            <form class="inline-form" action="{{ url_for('delete_child', child_id=child.id) }}" method="post" onsubmit="return confirm('この子供と成長記録を削除しますか？');">
+              <button class="danger" type="submit">削除</button>
+            </form>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">まだ子供が登録されていません。</p>
+    {% endif %}
+  </section>
+{% endblock %}
