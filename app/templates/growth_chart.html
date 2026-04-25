@@ -9,7 +9,6 @@
   <section class="chart-box" style="margin-top: 24px;">
     <div class="record-top">
       <h2 style="margin: 0;">身長と体重</h2>
-      <span class="pill">Dual Axis</span>
     </div>
 
     {% if chart.height_points or chart.weight_points %}
@@ -75,6 +74,7 @@
       <div class="card baby-row">
         <span class="muted">{{ record.record_date }}</span>
         <strong>{{ record.height_cm if record.height_cm is not none else '—' }}cm / {{ record.weight_kg if record.weight_kg is not none else '—' }}kg</strong>
+        <a class="muted" href="{{ url_for('edit_record', record_id=record.id) }}">編集</a>
       </div>
     {% else %}
       <div class="card empty-state">

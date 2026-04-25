@@ -47,7 +47,7 @@
         <article class="card timeline-card">
           <div class="record-top">
             <span class="muted">{{ record.record_date }}</span>
-            <span class="pill">{{ age_text }}</span>
+            <a class="pill" href="{{ url_for('edit_record', record_id=record.id) }}">編集</a>
           </div>
 
           {% if record.has_image %}

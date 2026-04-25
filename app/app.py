@@ -293,6 +293,30 @@ def get_records(child_id, limit=None, images_only=False, ascending=False):
             return cur.fetchall()
 
 
+def get_record_or_none(record_id):
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT
+                    id,
+                    child_id,
+                    record_date,
+                    height_cm,
+                    weight_kg,
+                    memo,
+                    image_filename,
+                    image_mime_type,
+                    image_data IS NOT NULL AS has_image,
+                    created_at
+                FROM growth_records
+                WHERE id = %s
+                """,
+                (record_id,),
+            )
+            return cur.fetchone()
+
+
 def latest_value(records, key):
     for record in records:
         if record[key] is not None:
@@ -350,13 +374,21 @@ def build_combined_chart(records):
     weight_points = []
     height_dots = []
     weight_dots = []
+    min_day = min(record["record_date"].toordinal() for record in values)
+    max_day = max(record["record_date"].toordinal() for record in values)
 
     def y_position(value, scale, top, bottom):
         min_value, max_value = scale
         return bottom - ((value - min_value) / (max_value - min_value) * (bottom - top))
 
-    for index, record in enumerate(values):
-        x_position = 14 + (72 * index / max(len(values) - 1, 1))
+    def x_position_for(record):
+        if min_day == max_day:
+            return 50
+        day_offset = record["record_date"].toordinal() - min_day
+        return 14 + (72 * day_offset / (max_day - min_day))
+
+    for record in values:
+        x_position = x_position_for(record)
         labels.append(
             {
                 "x": f"{x_position:.2f}",
@@ -394,6 +426,15 @@ def build_combined_chart(records):
         "labels": labels,
         "latest_height": heights[-1] if heights else None,
         "latest_weight": weights[-1] if weights else None,
+    }
+
+
+def form_from_record(record):
+    return {
+        "record_date": record["record_date"].isoformat(),
+        "height_cm": record["height_cm"] if record["height_cm"] is not None else "",
+        "weight_kg": record["weight_kg"] if record["weight_kg"] is not None else "",
+        "memo": record["memo"] or "",
     }
 
 
@@ -529,6 +570,8 @@ def add_record(child_id):
                 child,
                 "add",
                 form=form_defaults,
+                form_title="きろくを追加",
+                submit_label="保存する",
             )
 
         with get_connection() as conn:
@@ -568,6 +611,103 @@ def add_record(child_id):
         child,
         "add",
         form=build_record_form_defaults(child["id"]),
+        form_title="きろくを追加",
+        submit_label="保存する",
+    )
+
+
+@app.route("/records/<int:record_id>/edit", methods=["GET", "POST"])
+def edit_record(record_id):
+    record = get_record_or_none(record_id)
+    if not record:
+        flash("記録が見つかりません。", "error")
+        return redirect(url_for("index"))
+
+    child = get_active_child(record["child_id"])
+    if not child:
+        flash("赤ちゃんが見つかりません。", "error")
+        return redirect(url_for("index"))
+
+    if request.method == "POST":
+        record_date = request.form.get("record_date", "")
+        height_text = request.form.get("height_cm", "").strip()
+        weight_text = request.form.get("weight_kg", "").strip()
+        memo = request.form.get("memo", "").strip() or None
+        image_file = request.files.get("image")
+
+        try:
+            if not record_date:
+                raise ValueError("記録日は必須です。")
+            height_cm = parse_optional_decimal(height_text, "身長")
+            weight_kg = parse_optional_decimal(weight_text, "体重")
+            image_data, image_mime_type, image_filename = read_optional_image(image_file)
+        except ValueError as error:
+            flash(str(error), "error")
+            form_values = form_from_record(record)
+            form_values.update(request.form)
+            return render_child_page(
+                "add_record.html",
+                child,
+                "add",
+                form=form_values,
+                record=record,
+                form_title="きろくを編集",
+                submit_label="更新する",
+            )
+
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                if image_data is None:
+                    cur.execute(
+                        """
+                        UPDATE growth_records
+                        SET
+                            record_date = %s,
+                            height_cm = %s,
+                            weight_kg = %s,
+                            memo = %s
+                        WHERE id = %s
+                        """,
+                        (record_date, height_cm, weight_kg, memo, record_id),
+                    )
+                else:
+                    cur.execute(
+                        """
+                        UPDATE growth_records
+                        SET
+                            record_date = %s,
+                            height_cm = %s,
+                            weight_kg = %s,
+                            memo = %s,
+                            image_data = %s,
+                            image_mime_type = %s,
+                            image_filename = %s
+                        WHERE id = %s
+                        """,
+                        (
+                            record_date,
+                            height_cm,
+                            weight_kg,
+                            memo,
+                            image_data,
+                            image_mime_type,
+                            image_filename,
+                            record_id,
+                        ),
+                    )
+            conn.commit()
+
+        flash("成長記録を更新しました。", "success")
+        return redirect(url_for("child_detail", child_id=child["id"]))
+
+    return render_child_page(
+        "add_record.html",
+        child,
+        "add",
+        form=form_from_record(record),
+        record=record,
+        form_title="きろくを編集",
+        submit_label="更新する",
     )
 
 

@@ -4,16 +4,23 @@
 
 {% block content %}
   <div class="top-bar">
-    <h1 class="page-title">きろくを追加</h1>
+    <h1 class="page-title">{{ form_title or 'きろくを追加' }}</h1>
     <button class="success" form="record-form" type="submit">✓</button>
   </div>
 
   <form id="record-form" class="stack" method="post" enctype="multipart/form-data">
     <label class="photo-upload" for="image">
       <span style="font-size: 34px;">📷</span>
-      <span>お写真をえらぶ</span>
+      <span>{% if record and record.has_image %}お写真を変更{% else %}お写真をえらぶ{% endif %}</span>
       <input id="image" name="image" type="file" accept="image/png,image/jpeg,image/gif,image/webp">
     </label>
+
+    {% if record and record.has_image %}
+      <a href="{{ url_for('record_photo', record_id=record.id) }}">
+        <img class="record-image" src="{{ url_for('record_image', record_id=record.id) }}" alt="{{ record.image_filename or '現在の写真' }}">
+      </a>
+      <p class="muted">新しい写真を選ぶと、現在の写真を差し替えます。</p>
+    {% endif %}
 
     <div class="input-card">
       <label for="record_date">日付</label>
@@ -43,7 +50,7 @@
     </div>
 
     <div class="form-actions">
-      <button type="submit">保存する</button>
+      <button type="submit">{{ submit_label or '保存する' }}</button>
       <a class="button secondary" href="{{ url_for('child_detail', child_id=child.id) }}">戻る</a>
     </div>
   </form>
