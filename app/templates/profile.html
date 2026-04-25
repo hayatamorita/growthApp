@@ -5,22 +5,26 @@
 {% block content %}
   {% if child %}
     <section class="card empty-state">
-      <div class="avatar large">
-        {% if child.has_profile_image %}
-          <img src="{{ url_for('profile_image', child_id=child.id) }}" alt="{{ child.name }}のプロフィール画像">
-        {% else %}
-          {{ child.name[:1] }}
-        {% endif %}
-      </div>
+      <details class="profile-image-editor">
+        <summary>
+          <span class="avatar large">
+            {% if child.has_profile_image %}
+              <img src="{{ url_for('profile_image', child_id=child.id) }}" alt="{{ child.name }}のプロフィール画像">
+            {% else %}
+              {{ child.name[:1] }}
+            {% endif %}
+          </span>
+        </summary>
+        <form class="profile-upload profile-image-panel" method="post" enctype="multipart/form-data" action="{{ url_for('update_profile_image', child_id=child.id) }}">
+          <label for="profile_image">プロフィール画像を選択</label>
+          <input id="profile_image" name="profile_image" type="file" accept="image/png,image/jpeg,image/gif,image/webp" required>
+          <button type="submit">アップして編集</button>
+        </form>
+      </details>
       <div>
         <h1 class="page-title">{{ child.name }} ちゃん</h1>
         <p class="page-subtitle">{{ child.birthday or '誕生日未設定' }} 生まれ</p>
       </div>
-      <form class="profile-upload" method="post" enctype="multipart/form-data" action="{{ url_for('update_profile_image', child_id=child.id) }}">
-        <label for="profile_image">プロフィール画像を編集</label>
-        <input id="profile_image" name="profile_image" type="file" accept="image/png,image/jpeg,image/gif,image/webp" required>
-        <button type="submit">画像を更新</button>
-      </form>
     </section>
   {% else %}
     <section class="card empty-state">
@@ -49,9 +53,6 @@
                 <span class="muted">{{ item.birthday or '誕生日未設定' }}</span>
               </span>
             </a>
-            <form method="post" action="{{ url_for('delete_child', child_id=item.id) }}" onsubmit="return confirm('この赤ちゃんと記録を削除しますか？');">
-              <button class="danger" type="submit">削除</button>
-            </form>
           </div>
         {% endfor %}
       </div>
