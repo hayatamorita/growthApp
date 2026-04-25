@@ -22,8 +22,6 @@ growth-app/
   README.md
   requirements.txt
   vercel.json
-  api/
-    index.py
   db/
     schema.sql
     README.md
@@ -32,6 +30,9 @@ growth-app/
     Dockerfile
     requirements.txt
     app.py
+    api/
+      __init__.py
+      index.py
     templates/
       base.html
       index.html
@@ -200,7 +201,7 @@ Vercel側の設定:
   - `DATABASE_URL`: Neon / Supabase の本番PostgreSQL接続文字列
   - `FLASK_SECRET_KEY`: 本番用のランダムな秘密値
 
-ルートの `vercel.json` では、すべてのリクエストを `api/index.py` に渡し、そこから `app/app.py` のFlaskアプリを読み込みます。
+ルートの `vercel.json` では、すべてのリクエストを `app/api/index.py` に渡し、そこから `app/app.py` のFlaskアプリを読み込みます。
 
 ルートの `requirements.txt` はVercel用です。`app/requirements.txt` はローカルDocker用として残しています。
 
@@ -208,7 +209,7 @@ Vercel側の設定:
 ブラウザ
   -> Vercel
   -> vercel.json
-  -> api/index.py
+  -> app/api/index.py
   -> app/app.py
   -> Flask
   -> PostgreSQL
