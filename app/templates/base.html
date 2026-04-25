@@ -5,115 +5,562 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}成長記録アプリ{% endblock %}</title>
   <style>
+    :root {
+      --bg: #fdf2f8;
+      --surface: #ffffff;
+      --pink: #f472b6;
+      --pink-strong: #ec4899;
+      --pink-soft: #fce7f3;
+      --blue: #60a5fa;
+      --blue-soft: #eff6ff;
+      --emerald: #34d399;
+      --slate: #334155;
+      --muted: #94a3b8;
+      --line: #fce7f3;
+      --danger: #fb7185;
+      --shadow: 0 18px 35px -26px rgba(15, 23, 42, 0.28);
+    }
+    * {
+      box-sizing: border-box;
+    }
     body {
       margin: 0;
-      background: #f0f9f3;
-      color: #173523;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.6;
+      background: var(--bg);
+      color: var(--slate);
+      font-family: "Nunito", "Hiragino Sans", "Yu Gothic", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      min-height: 100vh;
     }
-    header {
-      background: #2f9e44;
-      color: white;
-      padding: 20px;
-    }
-    header a {
-      color: white;
+    a {
+      color: inherit;
       text-decoration: none;
     }
+    h1, h2, h3, p {
+      margin-top: 0;
+    }
+    .phone-shell {
+      background: var(--bg);
+      box-shadow: 0 0 60px -36px rgba(15, 23, 42, 0.55);
+      margin: 0 auto;
+      max-width: 430px;
+      min-height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
     main {
-      max-width: 960px;
-      margin: 28px auto;
-      padding: 0 16px;
+      padding: 24px 24px 116px;
+    }
+    .top-bar {
+      align-items: center;
+      display: flex;
+      justify-content: space-between;
+      margin: 4px 0 24px;
+    }
+    .top-title {
+      color: #1e293b;
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+    }
+    .top-pill {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--pink);
+      font-size: 11px;
+      font-weight: 900;
+      padding: 7px 12px;
+    }
+    .page-title {
+      color: #1e293b;
+      font-size: 26px;
+      line-height: 1.25;
+      margin-bottom: 6px;
+    }
+    .page-subtitle,
+    .muted {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.7;
+      margin-bottom: 0;
     }
     .card {
-      background: white;
-      border-radius: 14px;
-      box-shadow: 0 4px 18px rgba(31, 111, 60, 0.12);
+      background: var(--surface);
+      border: 1px solid rgba(252, 231, 243, 0.95);
+      border-radius: 36px;
+      box-shadow: var(--shadow);
       margin-bottom: 20px;
       padding: 22px;
     }
-    label {
-      display: block;
-      font-weight: 700;
-      margin-top: 12px;
+    .profile-summary {
+      align-items: center;
+      display: flex;
+      gap: 18px;
+      padding: 22px;
     }
-    input, textarea {
-      box-sizing: border-box;
+    .avatar {
+      align-items: center;
+      background: var(--pink-soft);
+      border: 4px solid white;
+      border-radius: 999px;
+      box-shadow: inset 0 0 0 1px var(--line);
+      color: var(--pink-strong);
+      display: inline-flex;
+      flex: 0 0 auto;
+      font-size: 24px;
+      font-weight: 900;
+      height: 74px;
+      justify-content: center;
+      width: 74px;
+    }
+    .avatar.large {
+      font-size: 40px;
+      height: 128px;
+      width: 128px;
+    }
+    .section-heading {
+      align-items: flex-end;
+      display: flex;
+      justify-content: space-between;
+      margin: 28px 2px 14px;
+    }
+    .section-heading h2 {
+      color: #1e293b;
+      font-size: 18px;
+      margin: 0;
+    }
+    .stats-grid,
+    .measure-grid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: 1fr 1fr;
+    }
+    .stat-card,
+    .measure-card {
+      background: var(--pink-soft);
+      border-radius: 24px;
+      padding: 16px;
+      text-align: center;
+    }
+    .stat-card.blue,
+    .measure-card.blue {
+      background: var(--blue-soft);
+    }
+    .stat-icon {
+      font-size: 22px;
+      margin-bottom: 4px;
+    }
+    .label {
+      color: var(--pink);
+      display: block;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+    .blue .label {
+      color: var(--blue);
+    }
+    .value {
+      color: #334155;
+      font-size: 22px;
+      font-weight: 900;
+    }
+    .unit {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .timeline-list,
+    .stack {
+      display: grid;
+      gap: 16px;
+    }
+    .timeline-card {
+      border-radius: 32px;
+      padding: 20px;
+    }
+    .record-top {
+      align-items: center;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .pill,
+    .chip {
+      background: var(--pink-soft);
+      border-radius: 999px;
+      color: var(--pink);
+      display: inline-flex;
+      font-size: 10px;
+      font-weight: 900;
+      padding: 6px 11px;
+    }
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .chip.blue {
+      background: var(--blue-soft);
+      color: var(--blue);
+    }
+    .memo {
+      color: #64748b;
+      font-size: 13px;
+      line-height: 1.8;
+      margin-bottom: 0;
+    }
+    .record-image,
+    .gallery-image {
+      display: block;
+      object-fit: cover;
       width: 100%;
-      border: 1px solid #b7dfc4;
-      border-radius: 10px;
+    }
+    .record-image {
+      border-radius: 24px;
+      height: 190px;
+      margin-bottom: 14px;
+    }
+    .gallery-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .gallery-tile {
+      aspect-ratio: 1;
+      background: var(--pink-soft);
+      border-radius: 18px;
+      overflow: hidden;
+    }
+    .gallery-image {
+      height: 100%;
+      transition: transform 0.18s ease;
+    }
+    .gallery-image:hover {
+      transform: scale(1.08);
+    }
+    form {
+      margin: 0;
+    }
+    label {
+      color: #94a3b8;
+      display: block;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      margin-bottom: 7px;
+      text-transform: uppercase;
+    }
+    input,
+    textarea {
+      background: transparent;
+      border: 0;
+      color: #334155;
       font: inherit;
-      margin-top: 6px;
-      padding: 10px 12px;
+      font-weight: 800;
+      outline: 0;
+      width: 100%;
+    }
+    input::placeholder,
+    textarea::placeholder {
+      color: #cbd5e1;
     }
     textarea {
-      min-height: 110px;
+      min-height: 132px;
+      resize: vertical;
     }
-    button, .button {
-      display: inline-block;
+    .input-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+    .measure-card {
+      text-align: left;
+    }
+    .unit-row {
+      align-items: end;
+      border-bottom: 2px solid rgba(244, 114, 182, 0.26);
+      display: flex;
+      gap: 6px;
+      padding-bottom: 5px;
+    }
+    .blue .unit-row {
+      border-bottom-color: rgba(96, 165, 250, 0.26);
+    }
+    .photo-upload {
+      align-items: center;
+      aspect-ratio: 1;
+      background: var(--pink-soft);
+      border: 2px dashed #f9a8d4;
+      border-radius: 40px;
+      color: var(--pink);
+      display: flex;
+      flex-direction: column;
+      font-size: 13px;
+      font-weight: 900;
+      gap: 12px;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+    }
+    .photo-upload input {
+      max-width: 260px;
+    }
+    .button,
+    button {
+      align-items: center;
+      background: var(--pink);
       border: 0;
-      border-radius: 10px;
-      background: #2f9e44;
+      border-radius: 999px;
+      box-shadow: 0 12px 24px -16px rgba(236, 72, 153, 0.9);
       color: white;
       cursor: pointer;
+      display: inline-flex;
       font: inherit;
-      font-weight: 700;
-      margin-top: 14px;
-      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 900;
+      justify-content: center;
+      padding: 12px 18px;
       text-decoration: none;
     }
+    .button.secondary {
+      background: #f8fafc;
+      box-shadow: none;
+      color: #64748b;
+    }
+    .button.success,
+    button.success {
+      background: var(--emerald);
+    }
     button.danger {
-      background: #e5484d;
+      background: #fff1f2;
+      box-shadow: none;
+      color: var(--danger);
+      font-size: 12px;
+      padding: 8px 11px;
     }
-    .muted {
-      color: #5f7f69;
+    .form-actions {
+      display: flex;
+      gap: 10px;
     }
-    .flash {
-      border-radius: 10px;
-      margin-bottom: 16px;
-      padding: 12px 14px;
+    .empty-state {
+      align-items: center;
+      display: grid;
+      gap: 10px;
+      justify-items: center;
+      padding: 32px 18px;
+      text-align: center;
     }
-    .flash.success {
-      background: #e8f8ef;
-      color: #1f6f3c;
+    .empty-icon {
+      align-items: center;
+      background: var(--pink-soft);
+      border-radius: 28px;
+      color: var(--pink);
+      display: flex;
+      font-size: 30px;
+      height: 64px;
+      justify-content: center;
+      width: 64px;
     }
-    .flash.error {
-      background: #ffecec;
-      color: #a62125;
+    .segmented {
+      background: var(--pink-soft);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      display: grid;
+      gap: 4px;
+      grid-template-columns: 1fr 1fr;
+      margin-bottom: 22px;
+      padding: 4px;
     }
-    .list {
-      list-style: none;
+    .segmented span {
+      background: white;
+      border-radius: 999px;
+      box-shadow: var(--shadow);
+      color: var(--pink);
+      font-size: 13px;
+      font-weight: 900;
+      padding: 9px;
+      text-align: center;
+    }
+    .chart-box {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 38px;
+      box-shadow: var(--shadow);
+      margin-bottom: 22px;
+      padding: 18px;
+    }
+    .chart-box svg {
+      display: block;
+      height: 240px;
+      width: 100%;
+    }
+    .chart-line {
+      fill: none;
+      stroke: var(--pink);
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-width: 4;
+    }
+    .chart-line.blue {
+      stroke: var(--blue);
+    }
+    .settings-card {
+      overflow: hidden;
       padding: 0;
     }
-    .list li {
-      border-top: 1px solid #dff2e4;
-      padding: 14px 0;
+    .setting-row {
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      gap: 14px;
+      justify-content: space-between;
+      padding: 16px 18px;
     }
-    .row {
+    .setting-row:last-child {
+      border-bottom: 0;
+    }
+    .setting-icon {
+      align-items: center;
+      background: var(--pink-soft);
+      border-radius: 18px;
+      color: var(--pink);
+      display: inline-flex;
+      height: 40px;
+      justify-content: center;
+      width: 40px;
+    }
+    .baby-switcher {
+      display: grid;
+      gap: 10px;
+    }
+    .baby-row {
       align-items: center;
       display: flex;
       gap: 12px;
       justify-content: space-between;
     }
-    .inline-form {
-      display: inline;
+    .flash {
+      border-radius: 22px;
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 14px;
+      padding: 12px 14px;
+    }
+    .flash.success {
+      background: #ecfdf5;
+      color: #059669;
+    }
+    .flash.error {
+      background: #fff1f2;
+      color: #e11d48;
+    }
+    .bottom-nav {
+      align-items: center;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 40px 40px 0 0;
+      bottom: 0;
+      box-shadow: 0 -8px 28px -24px rgba(15, 23, 42, 0.8);
+      display: flex;
+      justify-content: space-between;
+      left: 50%;
+      max-width: 430px;
+      padding: 14px 24px 18px;
+      position: fixed;
+      transform: translateX(-50%);
+      width: 100%;
+      z-index: 10;
+    }
+    .nav-item {
+      align-items: center;
+      color: #cbd5e1;
+      display: flex;
+      flex-direction: column;
+      font-size: 10px;
+      font-weight: 900;
+      gap: 3px;
+      min-width: 48px;
+    }
+    .nav-item.active {
+      color: var(--pink);
+    }
+    .nav-icon {
+      font-size: 22px;
+      line-height: 1;
+    }
+    .nav-add {
+      align-items: center;
+      background: var(--pink);
+      border-radius: 999px;
+      box-shadow: 0 14px 26px -12px rgba(236, 72, 153, 0.8);
+      color: white;
+      display: inline-flex;
+      font-size: 28px;
+      height: 58px;
+      justify-content: center;
+      margin-top: -42px;
+      width: 58px;
+    }
+    @media (max-width: 520px) {
+      main {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+      .measure-grid,
+      .stats-grid {
+        grid-template-columns: 1fr 1fr;
+      }
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1><a href="{{ url_for('index') }}">成長記録アプリ</a></h1>
-  </header>
-  <main>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="flash {{ category }}">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
-    {% block content %}{% endblock %}
-  </main>
+  <div class="phone-shell">
+    <main>
+      <div class="top-bar">
+        <a class="top-title" href="{{ url_for('index') }}">成長記録</a>
+        {% if child %}
+          <span class="top-pill">{{ child.name }}</span>
+        {% else %}
+          <span class="top-pill">Profile</span>
+        {% endif %}
+      </div>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </main>
+
+    {% if child %}
+      <nav class="bottom-nav">
+        <a class="nav-item {% if active_tab == 'home' %}active{% endif %}" href="{{ url_for('child_detail', child_id=child.id) }}">
+          <span class="nav-icon">⌂</span>
+          <span>Home</span>
+        </a>
+        <a class="nav-item {% if active_tab == 'chart' %}active{% endif %}" href="{{ url_for('growth_chart', child_id=child.id) }}">
+          <span class="nav-icon">⌁</span>
+          <span>Chart</span>
+        </a>
+        <a class="nav-add" href="{{ url_for('add_record', child_id=child.id) }}">＋</a>
+        <a class="nav-item {% if active_tab == 'gallery' %}active{% endif %}" href="{{ url_for('gallery', child_id=child.id) }}">
+          <span class="nav-icon">□</span>
+          <span>Gallery</span>
+        </a>
+        <a class="nav-item {% if active_tab == 'profile' %}active{% endif %}" href="{{ url_for('profile', child_id=child.id) }}">
+          <span class="nav-icon">⚙</span>
+          <span>Profile</span>
+        </a>
+      </nav>
+    {% endif %}
+  </div>
 </body>
 </html>

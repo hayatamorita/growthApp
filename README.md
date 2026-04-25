@@ -120,6 +120,8 @@ docker compose exec db psql -U growth_user -d growth_db
 - 子供の追加、削除
 - 子供ごとの成長記録一覧表示
 - 成長記録の追加、削除
+- サンプルUIに合わせた Home / Chart / Add / Gallery / Profile のタブ構成
+- 写真つき成長記録の追加、アルバム表示
 
 ## GitHub に含めないもの
 
@@ -223,6 +225,8 @@ Vercel側の設定:
 - アプリ起動時に `init_db()` が `children` と `growth_records` テーブルを作成します。
 - SQLは psycopg のプレースホルダを使って実行しています。
 - `./app:/app` を volume mount しているため、ローカルのアプリコード変更がコンテナに反映されます。
+- 写真は最小構成としてPostgreSQLの `BYTEA` カラムに保存します。
+- 写真はJPEG、PNG、GIF、WebPに対応し、標準では10MBまでです。
 
 ## 次のステップ
 

@@ -12,6 +12,9 @@ CREATE TABLE IF NOT EXISTS growth_records (
     height_cm NUMERIC,
     weight_kg NUMERIC,
     memo TEXT,
+    image_data BYTEA,
+    image_mime_type TEXT,
+    image_filename TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

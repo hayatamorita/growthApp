@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Chart - 成長記録アプリ{% endblock %}
+
+{% block content %}
+  <h1 class="page-title">成長曲線</h1>
+  <p class="page-subtitle">{{ child.name }} ちゃんの身長・体重の変化</p>
+
+  <div class="segmented" style="margin-top: 24px;">
+    <span>身長</span>
+    <span>体重</span>
+  </div>
+
+  <section class="chart-box">
+    <h2>身長</h2>
+    {% if height_chart.points %}
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="身長グラフ">
+        <line x1="8" y1="15" x2="8" y2="90" stroke="#f1f5f9" stroke-width="1" />
+        <line x1="8" y1="90" x2="94" y2="90" stroke="#f1f5f9" stroke-width="1" />
+        <polyline class="chart-line" points="{{ height_chart.points }}" />
+      </svg>
+      <p class="muted">最新: {{ height_chart.latest }} cm</p>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">📏</div>
+        <p class="muted">身長の記録がまだありません。</p>
+      </div>
+    {% endif %}
+  </section>
+
+  <section class="chart-box">
+    <h2>体重</h2>
+    {% if weight_chart.points %}
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="体重グラフ">
+        <line x1="8" y1="15" x2="8" y2="90" stroke="#f1f5f9" stroke-width="1" />
+        <line x1="8" y1="90" x2="94" y2="90" stroke="#f1f5f9" stroke-width="1" />
+        <polyline class="chart-line blue" points="{{ weight_chart.points }}" />
+      </svg>
+      <p class="muted">最新: {{ weight_chart.latest }} kg</p>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">⚖️</div>
+        <p class="muted">体重の記録がまだありません。</p>
+      </div>
+    {% endif %}
+  </section>
+
+  <div class="section-heading">
+    <h2>最近の記録</h2>
+  </div>
+  <section class="stack">
+    {% for record in records[-3:]|reverse %}
+      <div class="card baby-row">
+        <span class="muted">{{ record.record_date }}</span>
+        <strong>{{ record.height_cm if record.height_cm is not none else '—' }}cm / {{ record.weight_kg if record.weight_kg is not none else '—' }}kg</strong>
+      </div>
+    {% else %}
+      <div class="card empty-state">
+        <p class="muted">グラフに表示できる記録がありません。</p>
+      </div>
+    {% endfor %}
+  </section>
+{% endblock %}

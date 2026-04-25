@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - 成長記録アプリ{% endblock %}
+
+{% block content %}
+  {% if child %}
+    <section class="card empty-state">
+      <div class="avatar large">{{ child.name[:1] }}</div>
+      <div>
+        <h1 class="page-title">{{ child.name }} ちゃん</h1>
+        <p class="page-subtitle">{{ child.birthday or '誕生日未設定' }} 生まれ</p>
+      </div>
+    </section>
+  {% else %}
+    <section class="card empty-state">
+      <div class="empty-icon">👶</div>
+      <h1 class="page-title">赤ちゃんを追加</h1>
+      <p class="page-subtitle">最初のプロフィールを作成しましょう。</p>
+    </section>
+  {% endif %}
+
+  <section>
+    <h2 class="muted" style="margin: 0 0 10px 12px;">赤ちゃんを追加</h2>
+    <form class="card stack" method="post" action="{{ url_for('profile', child_id=child.id) if child else url_for('index') }}">
+      <div class="input-card">
+        <label for="name">名前（必須）</label>
+        <input id="name" name="name" placeholder="例: ひな" required>
+      </div>
+      <div class="input-card">
+        <label for="birthday">誕生日</label>
+        <input id="birthday" name="birthday" type="date">
+      </div>
+      <button type="submit">＋ 赤ちゃんを追加</button>
+    </form>
+  </section>
+
+  {% if children %}
+    <section>
+      <h2 class="muted" style="margin: 0 0 10px 12px;">Baby Profiles</h2>
+      <div class="card baby-switcher">
+        {% for item in children %}
+          <div class="baby-row">
+            <a class="baby-row" href="{{ url_for('child_detail', child_id=item.id) }}">
+              <span class="avatar" style="height: 44px; width: 44px; font-size: 16px;">{{ item.name[:1] }}</span>
+              <span>
+                <strong>{{ item.name }}</strong><br>
+                <span class="muted">{{ item.birthday or '誕生日未設定' }}</span>
+              </span>
+            </a>
+            <form method="post" action="{{ url_for('delete_child', child_id=item.id) }}" onsubmit="return confirm('この赤ちゃんと記録を削除しますか？');">
+              <button class="danger" type="submit">削除</button>
+            </form>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+
+  <section>
+    <h2 class="muted" style="margin: 24px 0 10px 12px;">アプリ設定</h2>
+    <div class="card settings-card">
+      <div class="setting-row">
+        <span><span class="setting-icon">👪</span> 家族を招待する</span>
+        <span class="muted">›</span>
+      </div>
+      <div class="setting-row">
+        <span><span class="setting-icon">🎨</span> テーマカラー</span>
+        <span class="muted">Pink</span>
+      </div>
+      <div class="setting-row">
+        <span><span class="setting-icon">⬇</span> データをエクスポート</span>
+        <span class="muted">›</span>
+      </div>
+    </div>
+  </section>
+
+  <p class="muted" style="text-align: center; margin-top: 28px;">Version 1.0.0</p>
+{% endblock %}
