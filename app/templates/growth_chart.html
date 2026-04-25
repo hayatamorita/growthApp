@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Chart - 成長記録アプリ{% endblock %}
+
+{% block content %}
+  <h1 class="page-title">成長曲線</h1>
+  <p class="page-subtitle">{{ child.name }} ちゃんの身長・体重の変化</p>
+
+  <section class="chart-box" style="margin-top: 24px;">
+    <div class="record-top">
+      <h2 style="margin: 0;">身長と体重</h2>
+    </div>
+
+    {% if chart.height_points or chart.weight_points %}
+      <svg class="combined-chart" viewBox="0 0 100 104" preserveAspectRatio="none" aria-label="身長と体重のグラフ">
+        <line class="chart-grid" x1="12" y1="16" x2="88" y2="16" />
+        <line class="chart-grid" x1="12" y1="31" x2="88" y2="31" />
+        <line class="chart-grid" x1="12" y1="46" x2="88" y2="46" />
+        <line class="chart-grid" x1="12" y1="58" x2="88" y2="58" />
+        <line class="chart-grid" x1="12" y1="73" x2="88" y2="73" />
+        <line class="chart-grid" x1="12" y1="88" x2="88" y2="88" />
+        <line x1="12" y1="14" x2="12" y2="90" stroke="#fbcfe8" stroke-width="0.8" />
+        <line x1="88" y1="14" x2="88" y2="90" stroke="#bfdbfe" stroke-width="0.8" />
+        <line x1="12" y1="90" x2="88" y2="90" stroke="#f1f5f9" stroke-width="0.8" />
+
+        {% for tick in chart.height_ticks %}
+          <text class="axis-label height" x="1" y="{{ tick.y }}">{{ tick.text }}</text>
+        {% endfor %}
+        {% for tick in chart.weight_ticks %}
+          <text class="axis-label weight" x="90" y="{{ tick.y }}">{{ tick.text }}</text>
+        {% endfor %}
+
+        {% if chart.height_points %}
+          <polyline class="chart-line" points="{{ chart.height_points }}" />
+          {% for dot in chart.height_dots %}
+            <circle class="chart-dot" cx="{{ dot.x }}" cy="{{ dot.y }}" r="1.8" />
+          {% endfor %}
+        {% endif %}
+        {% if chart.weight_points %}
+          <polyline class="chart-line blue" points="{{ chart.weight_points }}" />
+          {% for dot in chart.weight_dots %}
+            <circle class="chart-dot blue" cx="{{ dot.x }}" cy="{{ dot.y }}" r="1.8" />
+          {% endfor %}
+        {% endif %}
+
+        {% for label in chart.labels %}
+          <text class="axis-label" x="{{ label.x }}" y="101" text-anchor="middle">{{ label.text }}</text>
+        {% endfor %}
+        <text class="axis-label" x="50" y="96" text-anchor="middle">日付</text>
+      </svg>
+
+      <div class="chart-legend">
+        <span class="legend-item"><span class="legend-dot"></span>身長（左軸・上）</span>
+        <span class="legend-item"><span class="legend-dot blue"></span>体重（右軸・下）</span>
+      </div>
+      <p class="muted" style="margin-top: 10px;">
+        最新:
+        身長 {{ chart.latest_height if chart.latest_height is not none else '—' }}cm /
+        体重 {{ chart.latest_weight if chart.latest_weight is not none else '—' }}kg
+      </p>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">⌁</div>
+        <p class="muted">グラフに表示できる記録がまだありません。</p>
+      </div>
+    {% endif %}
+  </section>
+
+  <div class="section-heading">
+    <h2>最近の記録</h2>
+  </div>
+  <section class="stack">
+    {% for record in records[-3:]|reverse %}
+      <div class="card baby-row">
+        <span class="muted">{{ record.record_date }}</span>
+        <strong>{{ record.height_cm if record.height_cm is not none else '—' }}cm / {{ record.weight_kg if record.weight_kg is not none else '—' }}kg</strong>
+        <a class="muted" href="{{ url_for('edit_record', record_id=record.id) }}">編集</a>
+      </div>
+    {% else %}
+      <div class="card empty-state">
+        <p class="muted">グラフに表示できる記録がありません。</p>
+      </div>
+    {% endfor %}
+  </section>
+{% endblock %}

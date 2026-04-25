@@ -1,39 +1,77 @@
 {% extends "base.html" %}
 
-{% block title %}子供一覧 - 成長記録アプリ{% endblock %}
+{% block title %}Home - 成長記録アプリ{% endblock %}
 
 {% block content %}
-  <section class="card">
-    <h2>子供を追加</h2>
-    <form method="post">
-      <label for="name">名前（必須）</label>
-      <input id="name" name="name" required>
-
-      <label for="birthday">誕生日</label>
-      <input id="birthday" name="birthday" type="date">
-
-      <button type="submit">追加する</button>
-    </form>
+  <section class="card profile-summary">
+    <div class="avatar">
+      {% if child.has_profile_image %}
+        <img src="{{ url_for('profile_image', child_id=child.id) }}" alt="{{ child.name }}のプロフィール画像">
+      {% else %}
+        {{ child.name[:1] }}
+      {% endif %}
+    </div>
+    <div>
+      <h1 class="page-title">{{ child.name }} ちゃん</h1>
+      <p class="page-subtitle">{{ age_text }}</p>
+    </div>
   </section>
 
-  <section class="card">
-    <h2>子供一覧</h2>
-    {% if children %}
-      <ul class="list">
-        {% for child in children %}
-          <li class="row">
-            <div>
-              <a href="{{ url_for('child_detail', child_id=child.id) }}"><strong>{{ child.name }}</strong></a>
-              <div class="muted">誕生日: {{ child.birthday or '未設定' }}</div>
-            </div>
-            <form class="inline-form" action="{{ url_for('delete_child', child_id=child.id) }}" method="post" onsubmit="return confirm('この子供と成長記録を削除しますか？');">
-              <button class="danger" type="submit">削除</button>
-            </form>
-          </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p class="muted">まだ子供が登録されていません。</p>
-    {% endif %}
+  <section class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">📏</div>
+      <span class="label">身長</span>
+      <span class="value">
+        {{ latest_height if latest_height is not none else '—' }}
+        <span class="unit">cm</span>
+      </span>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-icon">⚖️</div>
+      <span class="label">体重</span>
+      <span class="value">
+        {{ latest_weight if latest_weight is not none else '—' }}
+        <span class="unit">kg</span>
+      </span>
+    </div>
   </section>
+
+  <div class="section-heading">
+    <h2>最近の記録</h2>
+    <a class="muted" href="{{ url_for('add_record', child_id=child.id) }}">追加する</a>
+  </div>
+
+  {% if records %}
+    <section class="timeline-list">
+      {% for record in records %}
+        <article class="card timeline-card">
+          <div class="record-top">
+            <span class="muted">{{ record.record_date }}</span>
+            <a class="pill" href="{{ url_for('edit_record', record_id=record.id) }}">編集</a>
+          </div>
+
+          {% if record.has_image %}
+            <a href="{{ url_for('record_photo', record_id=record.id) }}">
+              <img class="record-image" src="{{ url_for('record_image', record_id=record.id) }}" alt="{{ record.image_filename or '成長記録の画像' }}">
+            </a>
+          {% endif %}
+
+          <h3>{{ record.memo[:18] if record.memo else '成長の記録' }}</h3>
+          <p class="memo">{{ record.memo or '身長・体重を記録しました。' }}</p>
+
+          <div class="chips">
+            <span class="chip">身長 {{ record.height_cm if record.height_cm is not none else '未入力' }}cm</span>
+            <span class="chip blue">体重 {{ record.weight_kg if record.weight_kg is not none else '未入力' }}kg</span>
+          </div>
+        </article>
+      {% endfor %}
+    </section>
+  {% else %}
+    <section class="card empty-state">
+      <div class="empty-icon">📒</div>
+      <h2>まだ記録がありません</h2>
+      <p class="muted">下の＋ボタンから、最初の成長記録を追加しましょう。</p>
+      <a class="button" href="{{ url_for('add_record', child_id=child.id) }}">記録を追加</a>
+    </section>
+  {% endif %}
 {% endblock %}

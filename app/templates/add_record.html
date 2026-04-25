@@ -1,25 +1,57 @@
 {% extends "base.html" %}
 
-{% block title %}記録を追加 - 成長記録アプリ{% endblock %}
+{% block title %}Add - 成長記録アプリ{% endblock %}
 
 {% block content %}
-  <section class="card">
-    <h2>{{ child.name }} の記録を追加</h2>
-    <form method="post">
-      <label for="record_date">記録日（必須）</label>
+  <div class="top-bar">
+    <h1 class="page-title">{{ form_title or 'きろくを追加' }}</h1>
+    <button class="success" form="record-form" type="submit">✓</button>
+  </div>
+
+  <form id="record-form" class="stack" method="post" enctype="multipart/form-data">
+    <label class="photo-upload" for="image">
+      <span style="font-size: 34px;">📷</span>
+      <span>{% if record and record.has_image %}お写真を変更{% else %}お写真をえらぶ{% endif %}</span>
+      <input id="image" name="image" type="file" accept="image/png,image/jpeg,image/gif,image/webp">
+    </label>
+
+    {% if record and record.has_image %}
+      <a href="{{ url_for('record_photo', record_id=record.id) }}">
+        <img class="record-image" src="{{ url_for('record_image', record_id=record.id) }}" alt="{{ record.image_filename or '現在の写真' }}">
+      </a>
+      <p class="muted">新しい写真を選ぶと、現在の写真を差し替えます。</p>
+    {% endif %}
+
+    <div class="input-card">
+      <label for="record_date">日付</label>
       <input id="record_date" name="record_date" type="date" value="{{ form.get('record_date', '') }}" required>
+    </div>
 
-      <label for="height_cm">身長（cm）</label>
-      <input id="height_cm" name="height_cm" type="number" step="0.1" min="0" value="{{ form.get('height_cm', '') }}">
+    <div class="measure-grid">
+      <div class="measure-card">
+        <label for="height_cm">身長</label>
+        <div class="unit-row">
+          <input id="height_cm" name="height_cm" type="number" step="0.1" min="0" placeholder="74.2" value="{{ form.get('height_cm', '') }}">
+          <span class="unit">cm</span>
+        </div>
+      </div>
+      <div class="measure-card blue">
+        <label for="weight_kg">体重</label>
+        <div class="unit-row">
+          <input id="weight_kg" name="weight_kg" type="number" step="0.1" min="0" placeholder="9.1" value="{{ form.get('weight_kg', '') }}">
+          <span class="unit">kg</span>
+        </div>
+      </div>
+    </div>
 
-      <label for="weight_kg">体重（kg）</label>
-      <input id="weight_kg" name="weight_kg" type="number" step="0.1" min="0" value="{{ form.get('weight_kg', '') }}">
+    <div class="input-card">
+      <label for="memo">Diary</label>
+      <textarea id="memo" name="memo" placeholder="今日はどんなことがあった？">{{ form.get('memo', '') }}</textarea>
+    </div>
 
-      <label for="memo">メモ</label>
-      <textarea id="memo" name="memo">{{ form.get('memo', '') }}</textarea>
-
-      <button type="submit">保存する</button>
-      <a class="button" href="{{ url_for('child_detail', child_id=child.id) }}">戻る</a>
-    </form>
-  </section>
+    <div class="form-actions">
+      <button type="submit">{{ submit_label or '保存する' }}</button>
+      <a class="button secondary" href="{{ url_for('child_detail', child_id=child.id) }}">戻る</a>
+    </div>
+  </form>
 {% endblock %}

@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - 成長記録アプリ{% endblock %}
+
+{% block content %}
+  {% if child %}
+    <section class="card empty-state">
+      <details class="profile-image-editor">
+        <summary>
+          <span class="avatar large">
+            {% if child.has_profile_image %}
+              <img src="{{ url_for('profile_image', child_id=child.id) }}" alt="{{ child.name }}のプロフィール画像">
+            {% else %}
+              {{ child.name[:1] }}
+            {% endif %}
+          </span>
+        </summary>
+        <form class="profile-upload profile-image-panel" method="post" enctype="multipart/form-data" action="{{ url_for('update_profile_image', child_id=child.id) }}">
+          <label for="profile_image">プロフィール画像を選択</label>
+          <input id="profile_image" name="profile_image" type="file" accept="image/png,image/jpeg,image/gif,image/webp" required>
+          <button type="submit">アップして編集</button>
+        </form>
+      </details>
+      <div>
+        <h1 class="page-title">{{ child.name }} ちゃん</h1>
+        <p class="page-subtitle">{{ child.birthday or '誕生日未設定' }} 生まれ</p>
+      </div>
+    </section>
+  {% else %}
+    <section class="card empty-state">
+      <div class="empty-icon">👶</div>
+      <h1 class="page-title">プロフィール</h1>
+      <p class="page-subtitle">赤ちゃんを追加して記録を始めましょう。</p>
+    </section>
+  {% endif %}
+
+  {% if children %}
+    <section>
+      <h2 class="muted" style="margin: 0 0 10px 12px;">Baby Profiles</h2>
+      <div class="card baby-switcher">
+        {% for item in children %}
+          <div class="baby-row">
+            <a class="baby-row" href="{{ url_for('child_detail', child_id=item.id) }}">
+              <span class="avatar" style="height: 44px; width: 44px; font-size: 16px;">
+                {% if item.has_profile_image %}
+                  <img src="{{ url_for('profile_image', child_id=item.id) }}" alt="{{ item.name }}のプロフィール画像">
+                {% else %}
+                  {{ item.name[:1] }}
+                {% endif %}
+              </span>
+              <span>
+                <strong>{{ item.name }}</strong><br>
+                <span class="muted">{{ item.birthday or '誕生日未設定' }}</span>
+              </span>
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+
+  <section>
+    <h2 class="muted" style="margin: 24px 0 10px 12px;">アプリ設定</h2>
+    <div class="card settings-card">
+      <div class="setting-row">
+        <span><span class="setting-icon">👪</span> 家族を招待する</span>
+        <span class="muted">›</span>
+      </div>
+      <div class="setting-row">
+        <span><span class="setting-icon">🎨</span> テーマカラー</span>
+        <span class="muted">Pink</span>
+      </div>
+      <div class="setting-row">
+        <span><span class="setting-icon">⬇</span> データをエクスポート</span>
+        <span class="muted">›</span>
+      </div>
+    </div>
+  </section>
+
+  <section style="margin-top: 24px;">
+    <a class="button" href="{{ url_for('new_child') }}" style="width: 100%;">＋ 赤ちゃんを追加</a>
+  </section>
+
+  <p class="muted" style="text-align: center; margin-top: 28px;">Version 1.0.0</p>
+{% endblock %}
